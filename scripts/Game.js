@@ -1,12 +1,13 @@
-var BreadScene = (function(){
+var Game = (function(){
 
-  var BreadScene = EC.Sprite.extend({
+  var Game = EC.Sprite.extend({
     initialize: function (x, y) {
-      BreadScene.superclass.initialize.apply(this, arguments);
+      Game.superclass.initialize.apply(this, arguments);
       this.x = x || 0;
       this.y = y || 0;
 
       this.debug = false;
+      this.mouseConstraint = null;
 
       this.on("addToStage", this._onAddToStage, this);
     },
@@ -30,22 +31,19 @@ var BreadScene = (function(){
       //this.world.solver.frictionIterations = 10000;
     },
     addElements: function () {
-      var self = this;
 
-      this.createGround(1, 688, 20, -20, 750); /// 地面
-      this.createGround(2, 20, 750, -20, 0); /// 左墙面
-      this.createGround(3, 20, 750, 648, 0); /// 右墙面
+      this.createGround(688, 20, -20, 750, '地面');
+      this.createGround(20, 750, -20, 0, '左墙面');
+      this.createGround(20, 750, 648, 0, '右墙面');
 
       var vec1 = [[24, 0],[35, 8],[15, 44],[19, 73],[47, 100],[38, 110],[4, 77],[0, 42]];
       var vec2 = [[14, 7],[24, 0],[47, 42],[47, 76],[7, 112],[0, 100],[32, 73],[33, 45]];
 
-      this.leftConvexBody = this.createPolygon(vec1, 113, 258);
-      this.rightConvexBody = this.createPolygon(vec2, 207, 258);
-
-      this._pawStack = [
-        this.leftConvexBody,
-        this.rightConvexBody
-      ];
+     setTimeout(function(){
+        this.constraintBody = this.createGround(50, 50, 120, 350, 'hit_body');
+       this.leftPaw = this.createPolygon(vec1, 113, 258, '左臂');
+       this.rightPaw = this.createPolygon(vec2, 207, 258, '右臂');
+     }.bind(this), 2000);
 
       this._boxStack = [
         this.createBox('bread01_png', Utils.range(0, 600)),
@@ -56,29 +54,18 @@ var BreadScene = (function(){
         this.createBox('bread06_png', Utils.range(0, 600))
       ];
 
-      this._pawStack.forEach(function(paw){
-        paw.shapes.forEach(function(shape){
-          self._boxStack.forEach(function(box){
-            var material = new p2.ContactMaterial(shape.material, box.shapes[0].material, {
-              friction : 1e5,
-            });
-            self.world.addContactMaterial(material);
-          });
-        });
-      });
-
       this.hooker = new Hooker();
       this.addChild(this.hooker);
 
     },
-    createGround: function (id, w, h, x, y ) {
+    createGround: function (w, h, x, y, displayName) {
       var p2body = new p2.Body(
         { mass: 1
           , position: Utils.getP2Pos(x + w / 2, y + h / 2)
           , type: p2.Body.STATIC
         }
       );
-      p2body.id = id;
+      p2body.displayName = displayName;
       this.world.addBody( p2body );
 
       var p2box = new p2.Box(
@@ -103,7 +90,7 @@ var BreadScene = (function(){
 
       return p2body;
     },
-    createPolygon: function (vecs, x, y) {
+    createPolygon: function (vecs, x, y, displayName) {
       var convex = new EC.Shape();
       convex.fill('#00000');
       convex.x = x;
@@ -123,13 +110,8 @@ var BreadScene = (function(){
         return Utils.getP2Pos(item[0], item[1]);
       });
 
-  /*    var convexShape = new p2.Convex({ vertices: p2vecs });
-      convexShape.material = new p2.Material();
-      concaveBody.addShape(convexShape);*/
+      concaveBody.displayName = displayName;
       concaveBody.fromPolygon(p2vecs);
-      concaveBody.shapes.forEach(function(shape){
-        shape.material = new p2.Material();
-      });
       this.world.addBody(concaveBody);
 
       if(this.debug) {
@@ -162,7 +144,7 @@ var BreadScene = (function(){
           height: Utils.extentP2(display.height)
         }
       );
-      boxShape.material = new p2.Material();
+
       var boxBody = new p2.Body(
         {
           mass: mass || 0.1,
@@ -171,6 +153,8 @@ var BreadScene = (function(){
           type: p2.Body.DYNAMIC
         }
       );
+
+      boxBody.displayName = display.name;
       boxBody.addShape(boxShape);
       this.world.addBody(boxBody);
       //同步display对象和p2对象
@@ -179,8 +163,24 @@ var BreadScene = (function(){
 
       return boxBody
     },
-    updateBox: function () {
+    updateDisplay: function () {
       var len = this.world.bodies.length;
+      var crBody = this.constraintBody;
+      var hooker = this.hooker;
+      var leftLeg = this.hooker.leftLeg;
+      var rightLeg = this.hooker.rightLeg;
+      var paws = this.hooker.paws;
+      if(crBody) {
+        crBody.position[0] = Utils.extentP2(hooker.x + 87);
+        crBody.position[1] = Utils.extentP2(paws.y + 275);
+        this.leftPaw.position[0] = Utils.extentP2(hooker.x + leftLeg.vx + leftLeg.vy + 35);
+        this.leftPaw.position[1] = Utils.extentP2(paws.y + leftLeg.vy + 320);
+        this.rightPaw.position[0] = Utils.extentP2(hooker.x + rightLeg.vx + 135);
+        this.rightPaw.position[1] = Utils.extentP2(paws.y + rightLeg.vy + 320);
+        this.leftPaw.angle = leftLeg.rotation/180*Math.PI;
+        this.rightPaw.angle = rightLeg.rotation/180*Math.PI;
+      }
+
       for(var i=0; i<len; i++){
         var boxBody = this.world.bodies[i];
         var display = boxBody.displays[0];
@@ -200,30 +200,49 @@ var BreadScene = (function(){
         }
       }
     },
+    createConstraint: function (body){
+      this.mouseConstraint = new p2.RevoluteConstraint(this.constraintBody, body, {
+        worldPivot: [0, 0]
+      });
+      this.world.addConstraint(this.mouseConstraint);
+    },
+    removeConstraint: function (){
+      this.world.removeConstraint(this.mouseConstraint);
+      this.mouseConstraint = null;
+    },
     initEvents: function () {
-      var leftBody = this.leftConvexBody;
-      var rightBody = this.rightConvexBody;
-      var hooker = this.hooker;
-      var leftLeg = this.hooker.leftLeg;
-      var rightLeg = this.hooker.rightLeg;
-      var paws = this.hooker.paws;
+      var isHit = false;
+      var crBody = null;
+
       this.on('enterframe', function() {
         this.world.step(1/60);
-        leftBody.position[0] = Utils.extentP2(hooker.x + leftLeg.vx + leftLeg.vy + 35);
-        leftBody.position[1] = Utils.extentP2(paws.y + leftLeg.vy + 320);
-        rightBody.position[0] = Utils.extentP2(hooker.x + rightLeg.vx + 135);
-        rightBody.position[1] = Utils.extentP2(paws.y + rightLeg.vy + 320);
-        leftBody.angle = leftLeg.rotation/180*Math.PI;
-        rightBody.angle = rightLeg.rotation/180*Math.PI;
-        this.updateBox();
+        this.updateDisplay();
       }, this);
 
       this.on("startGame", function(e){
         this.hooker.goDown();
       }, this);
+
+      this.world.on('impact', function(e){
+        crBody = this.constraintBody;
+        if(crBody) {
+          if (!isHit && (e.bodyA === crBody || e.bodyB === crBody)) {
+            isHit = true;
+            console.log(2)
+            this.hooker.stop();
+            this.createConstraint(e.bodyA === crBody ? e.bodyB : e.bodyA);
+          }
+        }
+      }, this);
+
+      this.hooker.on('reachup', function(){
+        isHit = false;
+        console.log(this.mouseConstraint)
+        this.removeConstraint();
+      }, this)
     }
   });
 
-  return BreadScene;
+  return Game;
 
 })();

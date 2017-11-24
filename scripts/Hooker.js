@@ -5,7 +5,6 @@ var Hooker = (function(){
 
       this.x = x || 0;
       this.y = y || 0;
-      this._isPushDown = false;
       this._canMove = false;
 
       this.on("addToStage", this._onAddToStage, this);
@@ -13,7 +12,6 @@ var Hooker = (function(){
     _onAddToStage: function () {
 
       this.paws = new EC.Sprite();
-
       this.leftLeg = Utils.createBitmap('left_leg_png', 13, 254);
       this.rightLeg = Utils.createBitmap('right_leg_png', 113, 254);
       this.leftLeg.anchorX = 0.5;
@@ -22,8 +20,6 @@ var Hooker = (function(){
       this.leftLeg.vy = 0;
       this.rightLeg.vx = 0;
       this.rightLeg.vy = 0;
-/*      this.leftLeg.alpha = 0;
-      this.rightLeg.alpha = 0;*/
       this.paws.addChild(this.leftLeg);
       this.paws.addChild(this.rightLeg);
       this.paws.addChild(Utils.createBitmap('machine_02_png', 23, -400));
@@ -33,10 +29,7 @@ var Hooker = (function(){
       this.initEvents();
     },
     goDown: function() {
-      this._isPushDown = true;
-      new TWEEN.Tween(this.paws).to({y: 380}, 3000).start().onComplete(function(){
-       /* new TWEEN.Tween(this.leftLeg).to({rotation: 120}, 800).start();
-        new TWEEN.Tween(this.rightLeg).to({rotation: 30}, 800).start();*/
+      this.pawTween = new TWEEN.Tween(this.paws).to({y: 380}, 3000).start().onComplete(function(){
         setTimeout(this.goUp.bind(this), 800);
       }.bind(this));
       this.openLegs();
@@ -44,10 +37,16 @@ var Hooker = (function(){
     goUp: function () {
       this.closeLegs(function(){
         new TWEEN.Tween(this.paws).to({y: 0}, 3000).start().onComplete(function(){
-          //this._isPushDown = false;
+          this.dispatch('reachup', this);
         }.bind(this));
       });
 
+    },
+    stop: function(){
+      if(this.pawTween) {
+        this.pawTween.stop();
+        setTimeout(this.goUp.bind(this), 800);
+      }
     },
     openLegs: function () {
       new TWEEN.Tween(this.leftLeg).to({vx: -30, rotation: 30}, 1200).start();
