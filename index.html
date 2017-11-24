@@ -1,0 +1,56 @@
+<!Doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>娃娃机</title>
+  <style>
+    body{
+      margin:0;
+      display: -webkit-box;
+      display: flex;
+      -webkit-box-pack: center;
+      justify-content: center;
+      background-color: #e3c19e;
+    }
+    * {
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+    }
+    #app_spin {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      width: 150px;
+      text-align: center;
+      -webkit-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 4px rgba(0,0,0,.15), 3px 3px 4px rgba(0,0,0,.15);
+    }
+  </style>
+</head>
+
+<body>
+
+<canvas id="app"></canvas>
+
+<div id="app_spin">loading: 0%</div>
+
+<script type="text/javascript" src="scripts/vendor/p2.js"></script>
+<script type="text/javascript" src="scripts/vendor/Tween.js"></script>
+<!-- build:js scripts/libs/easyrender.js -->
+<script type="text/javascript" src="scripts/lib/easyrender.js"></script>
+<script type="text/javascript" src="scripts/Utils.js"></script>
+<script type="text/javascript" src="scripts/loader.js"></script>
+<script type="text/javascript" src="scripts/Noticer.js"></script>
+<script type="text/javascript" src="scripts/Timer.js"></script>
+<script type="text/javascript" src="scripts/Hooker.js"></script>
+<script type="text/javascript" src="scripts/BreadScene.js"></script>
+<script type="text/javascript" src="scripts/MainScene.js"></script>
+<script type="text/javascript" src="scripts/main.js"></script>
+<!-- endbuild -->
+
+</body>
+</html>

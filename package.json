@@ -1,0 +1,31 @@
+{
+  "name": "gulp-project",
+  "version": "1.0.0",
+  "description": "build tools for gulp projects",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "gulp default",
+    "build": "gulp build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodejs-team/evtGulp.git"
+  },
+  "keywords": [
+    "gulp",
+    "jquery",
+    "css3"
+  ],
+  "author": "semdy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nodejs-team/evtGulp/issues"
+  },
+  "homepage": "https://github.com/nodejs-team/evtGulp#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "~3.9.1",
+    "gulp-webserver": "^0.9.1"
+  }
+}
