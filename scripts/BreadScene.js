@@ -6,7 +6,7 @@ var BreadScene = (function(){
       this.x = x || 0;
       this.y = y || 0;
 
-      this.debug = true;
+      this.debug = false;
 
       this.on("addToStage", this._onAddToStage, this);
     },
