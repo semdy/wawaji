@@ -7,7 +7,14 @@ var Game = (function(){
       this.y = y || 0;
 
       this.debug = false;
+      this.leftPaw = null;
+      this.rightPaw = null;
+      this.constraintBody = null;
       this.mouseConstraint = null;
+      this.target = null;
+      this.isCollision = false;
+
+      this._boxStack = [];
 
       this.on("addToStage", this._onAddToStage, this);
     },
@@ -19,15 +26,13 @@ var Game = (function(){
     createWorldSystem: function () {
       //创建world
       this.world = new p2.World({
-        gravity: [0, 50]
+        gravity: [0, 35]
       });
 
       //this.world.sleepMode = p2.World.BODY_SLEEPING;
-      //this.world.defaultContactMaterial.friction = 1e5;
+      this.world.defaultContactMaterial.friction = 0.5;
       this.world.setGlobalStiffness( 1000 );
-      //this.world.islandSplit = true;
 
-      // Enable dynamic friction. A bit more expensive than without, but gives more accurate friction
       //this.world.solver.frictionIterations = 10000;
     },
     addElements: function () {
@@ -36,27 +41,40 @@ var Game = (function(){
       this.createGround(20, 750, -20, 0, '左墙面');
       this.createGround(20, 750, 648, 0, '右墙面');
 
-      var vec1 = [[24, 0],[35, 8],[15, 44],[19, 73],[47, 100],[38, 110],[4, 77],[0, 42]];
-      var vec2 = [[14, 7],[24, 0],[47, 42],[47, 76],[7, 112],[0, 100],[32, 73],[33, 45]];
-
-     setTimeout(function(){
-        this.constraintBody = this.createGround(50, 50, 120, 350, 'hit_body');
-       this.leftPaw = this.createPolygon(vec1, 113, 258, '左臂');
-       this.rightPaw = this.createPolygon(vec2, 207, 258, '右臂');
-     }.bind(this), 2000);
-
-      this._boxStack = [
-        this.createBox('bread01_png', Utils.range(0, 600)),
-        this.createBox('bread02_png', Utils.range(0, 600)),
-        this.createBox('bread03_png', Utils.range(0, 600)),
-        this.createBox('bread04_png', Utils.range(0, 600)),
-        this.createBox('bread05_png', Utils.range(0, 600)),
-        this.createBox('bread06_png', Utils.range(0, 600))
-      ];
+      this.reStart();
 
       this.hooker = new Hooker();
       this.addChild(this.hooker);
 
+    },
+    reStart: function () {
+      this.isCollision = false;
+      this.target = null;
+
+      var self = this;
+
+      var breadArgs = [
+        {resId: "bread01_png", bundleId: 1},{resId: "bread02_png", bundleId: 2},
+        {resId: "bread03_png", bundleId: 3},{resId: "bread04_png", bundleId: 4},
+        {resId: "bread05_png", bundleId: 5},{resId: "bread06_png", bundleId: 6},
+        {resId: "bread07_png", bundleId: 7},{resId: "bread08_png", bundleId: 8},
+        {resId: "bread09_png", bundleId: 9},{resId: "bread10_png", bundleId: 10},
+      ];
+
+      breadArgs.forEach(function (arg, i) {
+        setTimeout(function(){
+          self._boxStack.push(self.createBread(arg, Utils.range(100, 400)));
+        }, i*100);
+      });
+    },
+    createConstraintBody: function () {
+      var vec1 = [[24, 0],[35, 8],[15, 44],[19, 73],[47, 100],[38, 110],[4, 77],[0, 42]];
+      var vec2 = [[14, 7],[24, 0],[47, 42],[47, 76],[7, 112],[0, 100],[32, 73],[33, 45]];
+      if(!this.constraintBody) {
+        this.constraintBody = this.createGround(50, 10, 120, 350, 'hit_body');
+      }
+      this.leftPaw = this.createPaw(vec1, 113, 258, '左臂');
+      this.rightPaw = this.createPaw(vec2, 207, 258, '右臂');
     },
     createGround: function (w, h, x, y, displayName) {
       var p2body = new p2.Body(
@@ -90,7 +108,7 @@ var Game = (function(){
 
       return p2body;
     },
-    createPolygon: function (vecs, x, y, displayName) {
+    createPaw: function (vecs, x, y, displayName) {
       var convex = new EC.Shape();
       convex.fill('#00000');
       convex.x = x;
@@ -101,9 +119,9 @@ var Game = (function(){
       convex.anchorX = convex.anchorY = .5;
 
       var concaveBody = new p2.Body({
-          mass: 0,
-          position: Utils.getP2Pos(x + convex.width/2, y + convex.height/2),
-          type: p2.Body.STATIC
+        mass: 0,
+        position: Utils.getP2Pos(x + convex.width/2, y + convex.height/2),
+        type: p2.Body.STATIC
       });
 
       var p2vecs = vecs.map(function(item){
@@ -123,11 +141,11 @@ var Game = (function(){
 
       return concaveBody;
     },
-    createBox: function(resId, posX, mass){
+    createBread: function(arg, posX, mass){
       //添加长方形刚体的显示对象
-      var display = Utils.createBitmap(resId);
-      display.width = display.width*0.5;
-      display.height = display.height*0.5;
+      var display = Utils.createBitmap(arg.resId);
+      display.width = display.width*0.6;
+      display.height = display.height*0.6;
       display.anchorX = 0.5;
       display.anchorY = 0.5;
 
@@ -147,14 +165,15 @@ var Game = (function(){
 
       var boxBody = new p2.Body(
         {
-          mass: mass || 0.1,
-          position: Utils.getP2Pos((posX || 0) + display.width / 2, display.height / 2),
+          mass: mass || 2,
+          position: Utils.getP2Pos((posX || 0) + display.width / 2, -display.height),
           angularVelocity: 1,
           type: p2.Body.DYNAMIC
         }
       );
 
       boxBody.displayName = display.name;
+      boxBody.bundleId = arg.bundleId;
       boxBody.addShape(boxShape);
       this.world.addBody(boxBody);
       //同步display对象和p2对象
@@ -163,6 +182,12 @@ var Game = (function(){
 
       return boxBody
     },
+    removePaws: function () {
+      this.world.removeBody(this.leftPaw);
+      this.world.removeBody(this.rightPaw);
+      //this.leftPaw = null;
+      //this.rightPaw = null;
+    },
     updateDisplay: function () {
       var len = this.world.bodies.length;
       var crBody = this.constraintBody;
@@ -170,18 +195,23 @@ var Game = (function(){
       var leftLeg = this.hooker.leftLeg;
       var rightLeg = this.hooker.rightLeg;
       var paws = this.hooker.paws;
-      if(crBody) {
+      var leftPaw = this.leftPaw;
+      var rightPaw = this.rightPaw;
+
+      if(crBody ) {
         crBody.position[0] = Utils.extentP2(hooker.x + 87);
-        crBody.position[1] = Utils.extentP2(paws.y + 275);
-        this.leftPaw.position[0] = Utils.extentP2(hooker.x + leftLeg.vx + leftLeg.vy + 35);
-        this.leftPaw.position[1] = Utils.extentP2(paws.y + leftLeg.vy + 320);
-        this.rightPaw.position[0] = Utils.extentP2(hooker.x + rightLeg.vx + 135);
-        this.rightPaw.position[1] = Utils.extentP2(paws.y + rightLeg.vy + 320);
-        this.leftPaw.angle = leftLeg.rotation/180*Math.PI;
-        this.rightPaw.angle = rightLeg.rotation/180*Math.PI;
+        crBody.position[1] = Utils.extentP2(paws.y + 295);
+        if(leftPaw && rightPaw) {
+          leftPaw.position[0] = Utils.extentP2(hooker.x + leftLeg.vx + leftLeg.vy + 35);
+          leftPaw.position[1] = Utils.extentP2(paws.y + leftLeg.vy + 320);
+          rightPaw.position[0] = Utils.extentP2(hooker.x + rightLeg.vx + 135);
+          rightPaw.position[1] = Utils.extentP2(paws.y + rightLeg.vy + 320);
+          leftPaw.angle = leftLeg.rotation / 180 * Math.PI;
+          rightPaw.angle = rightLeg.rotation / 180 * Math.PI;
+        }
       }
 
-      for(var i=0; i<len; i++){
+      for(var i = 0; i < len; i++) {
         var boxBody = this.world.bodies[i];
         var display = boxBody.displays[0];
         if (display) {
@@ -201,8 +231,9 @@ var Game = (function(){
       }
     },
     createConstraint: function (body){
-      this.mouseConstraint = new p2.RevoluteConstraint(this.constraintBody, body, {
-        worldPivot: [0, 0]
+      var crBody = this.constraintBody;
+      this.mouseConstraint = new p2.RevoluteConstraint(crBody, body, {
+        worldPivot: [crBody.position[0], crBody.position[1]]
       });
       this.world.addConstraint(this.mouseConstraint);
     },
@@ -210,8 +241,10 @@ var Game = (function(){
       this.world.removeConstraint(this.mouseConstraint);
       this.mouseConstraint = null;
     },
+    showResult: function (target) {
+      console.log(target.displayName, target.bundleId);
+    },
     initEvents: function () {
-      var isHit = false;
       var crBody = null;
 
       this.on('enterframe', function() {
@@ -226,20 +259,41 @@ var Game = (function(){
       this.world.on('impact', function(e){
         crBody = this.constraintBody;
         if(crBody) {
-          if (!isHit && (e.bodyA === crBody || e.bodyB === crBody)) {
-            isHit = true;
-            console.log(2)
+          if (!this.isCollision && (e.bodyA === crBody || e.bodyB === crBody)) {
+            this.isCollision = true;
+            this.target = e.bodyA === crBody ? e.bodyB : e.bodyA;
             this.hooker.stop();
-            this.createConstraint(e.bodyA === crBody ? e.bodyB : e.bodyA);
+            this.createConstraint(this.target);
+            console.log('hit -> ' + this.target.displayName);
           }
         }
       }, this);
 
+      this.world.on('removeBody', function(e){
+        var displays = e.body.displays;
+         for(var i = 0; i<displays.length; i++){
+           this.removeChild(displays[i]);
+         }
+      }, this);
+
+      this.hooker.on('godown', function(){
+        //钩子一目下降时创建爪子刚体
+        this.createConstraintBody();
+      }, this);
+
+      this.hooker.on('goup', function(){
+        //移除爪子刚体，防止其它面包被托起
+        this.removePaws();
+        //创建爪子，稳固已抓到的面包
+        setTimeout(this.createConstraintBody.bind(this), 1000);
+      }, this);
+
       this.hooker.on('reachup', function(){
-        isHit = false;
-        console.log(this.mouseConstraint)
+        this.removePaws();
         this.removeConstraint();
-      }, this)
+        this.showResult(this.target);
+        console.log('reachup');
+      }, this);
     }
   });
 

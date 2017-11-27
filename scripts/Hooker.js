@@ -29,15 +29,18 @@ var Hooker = (function(){
       this.initEvents();
     },
     goDown: function() {
+      this.dispatch('godown');
       this.pawTween = new TWEEN.Tween(this.paws).to({y: 380}, 3000).start().onComplete(function(){
         setTimeout(this.goUp.bind(this), 800);
       }.bind(this));
       this.openLegs();
     },
     goUp: function () {
+      this.dispatch('close');
       this.closeLegs(function(){
+        this.dispatch('goup');
         new TWEEN.Tween(this.paws).to({y: 0}, 3000).start().onComplete(function(){
-          this.dispatch('reachup', this);
+          this.dispatch('reachup');
         }.bind(this));
       });
 

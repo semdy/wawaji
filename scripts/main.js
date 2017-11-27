@@ -75,6 +75,10 @@
       this.startButton.on("touchstart", function(e) {
         e.stopPropagation();
       }, this);
+
+      document.addEventListener(EC.EVENTS.START, function (e) {
+        e.preventDefault();
+      }, false);
     }
   });
 
