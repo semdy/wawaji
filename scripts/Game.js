@@ -52,7 +52,6 @@ var Game = (function(){
       this.target = null;
 
       var self = this;
-
       var breadArgs = [
         {resId: "bread01_png", bundleId: 1},{resId: "bread02_png", bundleId: 2},
         {resId: "bread03_png", bundleId: 3},{resId: "bread04_png", bundleId: 4},
