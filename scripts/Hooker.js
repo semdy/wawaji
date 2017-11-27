@@ -5,7 +5,7 @@ var Hooker = (function(){
 
       this.x = x || 0;
       this.y = y || 0;
-      this._canMove = false;
+      this._canMove = true;
 
       this.on("addToStage", this._onAddToStage, this);
     },
@@ -72,18 +72,26 @@ var Hooker = (function(){
           }
 
           if (this.x > 490) {
-            //isLeft = false;
+            isLeft = false;
             this.x = 490
           }
 
           if (this.x <= 0) {
-            //isLeft = true;
+            isLeft = true;
             this.x = 0;
           }
         }
       });
 
-      this.stage.touchEnabled = true;
+      this.on("startGame", function(e){
+        this._canMove = false;
+      }, this);
+
+      this.on("reStartGame", function(e){
+        this._canMove = true;
+      }, this);
+
+     /* this.stage.touchEnabled = true;
       this.stage.on("touchstart", function(e){
         this._canMove = true;
         if(e.stageX > this.stage.width/2) {
@@ -95,7 +103,7 @@ var Hooker = (function(){
 
       this.stage.on("touchend", function(e){
         this._canMove = false;
-      }, this);
+      }, this);*/
     }
   });
 

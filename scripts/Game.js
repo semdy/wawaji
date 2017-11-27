@@ -6,7 +6,7 @@ var Game = (function(){
       this.x = x || 0;
       this.y = y || 0;
 
-      this.debug = false;
+      this.debug = true;
       this.leftPaw = null;
       this.rightPaw = null;
       this.constraintBody = null;
@@ -38,11 +38,10 @@ var Game = (function(){
     addElements: function () {
 
       this.createGround(688, 20, -20, 750, '地面');
-      this.createGround(20, 750, -20, 0, '左墙面');
-      this.createGround(20, 750, 648, 0, '右墙面');
+      this.createGround(20, 950, -20, -200, '左墙面');
+      this.createGround(20, 950, 648, -200, '右墙面');
 
       this.reStart();
-
       this.hooker = new Hooker();
       this.addChild(this.hooker);
 
@@ -60,11 +59,15 @@ var Game = (function(){
         {resId: "bread09_png", bundleId: 9},{resId: "bread10_png", bundleId: 10},
       ];
 
+      this.clearBodies();
+
       breadArgs.forEach(function (arg, i) {
         setTimeout(function(){
           self._boxStack.push(self.createBread(arg, Utils.range(100, 400)));
         }, i*100);
       });
+
+      this.broadcast('reStartGame');
     },
     createConstraintBody: function () {
       var vec1 = [[24, 0],[35, 8],[15, 44],[19, 73],[47, 100],[38, 110],[4, 77],[0, 42]];
@@ -182,10 +185,28 @@ var Game = (function(){
       return boxBody
     },
     removePaws: function () {
-      this.world.removeBody(this.leftPaw);
-      this.world.removeBody(this.rightPaw);
-      //this.leftPaw = null;
-      //this.rightPaw = null;
+      if(this.leftPaw) {
+        this.world.removeBody(this.leftPaw);
+      }
+      if(this.rightPaw) {
+        this.world.removeBody(this.rightPaw);
+      }
+      this.leftPaw = null;
+      this.rightPaw = null;
+    },
+    clearBodies: function () {
+      this.removePaws();
+
+      if(this.constraintBody) {
+        this.world.removeBody(this.constraintBody);
+        this.constraintBody = null;
+      }
+
+      this._boxStack.forEach(function(body){
+        this.world.removeBody(body);
+      }.bind(this));
+
+      this._boxStack = [];
     },
     updateDisplay: function () {
       var len = this.world.bodies.length;
@@ -292,6 +313,13 @@ var Game = (function(){
         this.removeConstraint();
         this.showResult(this.target);
         console.log('reachup');
+      }, this);
+
+      this.stage.touchEnabled = true;
+      this.stage.on("touchend", function(e){
+        if(e.stageY < 200) {
+          this.reStart();
+        }
       }, this);
     }
   });
