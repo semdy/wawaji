@@ -6,7 +6,7 @@ var Game = (function(){
       this.x = x || 0;
       this.y = y || 0;
 
-      this.debug = true;
+      this.debug = false;
       this.leftPaw = null;
       this.rightPaw = null;
       this.constraintBody = null;
@@ -262,7 +262,11 @@ var Game = (function(){
       this.mouseConstraint = null;
     },
     showResult: function (target) {
-      console.log(target.displayName, target.bundleId);
+      if(target) {
+        console.log(target.displayName, target.bundleId);
+      } else {
+        console.log('未抓到任何面包');
+      }
     },
     initEvents: function () {
       var crBody = null;
