@@ -30,34 +30,32 @@ var Hooker = (function(){
     },
     goDown: function() {
       this.dispatch('godown');
-      this.pawTween = new TWEEN.Tween(this.paws).to({y: 380}, 3000).start().onComplete(function(){
+      EC.Tween.get(this.paws).to({y: 380}, 3000).call(function(){
         setTimeout(this.goUp.bind(this), 800);
-      }.bind(this));
+      }, this);
       this.openLegs();
     },
     goUp: function () {
       this.dispatch('close');
       this.closeLegs(function(){
         this.dispatch('goup');
-        new TWEEN.Tween(this.paws).to({y: 0}, 3000).start().onComplete(function(){
+        EC.Tween.get(this.paws).to({y: 0}, 3000).call(function(){
           this.dispatch('reachup');
-        }.bind(this));
+        }, this);
       });
 
     },
     stop: function(){
-      if(this.pawTween) {
-        this.pawTween.stop();
-        setTimeout(this.goUp.bind(this), 800);
-      }
+      EC.Tween.get(this.paws).stop();
+      setTimeout(this.goUp.bind(this), 800);
     },
     openLegs: function () {
-      new TWEEN.Tween(this.leftLeg).to({vx: -30, rotation: 30}, 1200).start();
-      new TWEEN.Tween(this.rightLeg).to({vx: 30, vy: -25, rotation: -27}, 1200).start();
+      EC.Tween.get(this.leftLeg).to({vx: -30, rotation: 30}, 1200);
+      EC.Tween.get(this.rightLeg).to({vx: 30, vy: -25, rotation: -27}, 1200);
     },
     closeLegs: function (callback) {
-      new TWEEN.Tween(this.leftLeg).to({vx: 0, rotation: 0}, 1200).start();
-      new TWEEN.Tween(this.rightLeg).to({vx: 0, vy: 0, rotation: 0}, 1200).start().onComplete(callback.bind(this));
+      EC.Tween.get(this.leftLeg).to({vx: 0, rotation: 0}, 1200);
+      EC.Tween.get(this.rightLeg).to({vx: 0, vy: 0, rotation: 0}, 1200).call(callback, this);
     },
     initEvents: function(){
       var isLeft = true;

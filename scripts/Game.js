@@ -56,7 +56,7 @@ var Game = (function(){
         {resId: "bread03_png", bundleId: 3},{resId: "bread04_png", bundleId: 4},
         {resId: "bread05_png", bundleId: 5},{resId: "bread06_png", bundleId: 6},
         {resId: "bread07_png", bundleId: 7},{resId: "bread08_png", bundleId: 8},
-        {resId: "bread09_png", bundleId: 9},{resId: "bread10_png", bundleId: 10},
+        {resId: "bread09_png", bundleId: 9},{resId: "bread10_png", bundleId: 10}
       ];
 
       this.clearBodies();

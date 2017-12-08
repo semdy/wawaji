@@ -22,9 +22,6 @@
 
   function createScene () {
     stage.addChild(new MainScene());
-    stage.on("enterframe", function(){
-      TWEEN.update();
-    });
   }
 
   var MainScene = EC.Sprite.extend({
