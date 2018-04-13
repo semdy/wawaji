@@ -3,7 +3,7 @@
  */
 
 var EC = {
-  version: '1.1.1'
+  version: '1.2.0'
 };
 
 (function (EC) {
@@ -402,12 +402,43 @@ var cancelAnimationFrame =
     return object.getBounds().intersects(target.getBounds());
   }
 
+  function getCtrlPoint(ps, i, a, b){
+    if (!a||!b) {
+      a = 0.25;
+      b = 0.25;
+    }
+
+    var pAx, pAy, pBx, pBy, last;
+
+    //处理两种极端情形
+    if (i < 1) {
+      pAx = ps[0][0] + (ps[1][0]-ps[0][0])*a;
+      pAy = ps[0][1] + (ps[1][1]-ps[0][1])*a;
+    } else {
+      pAx = ps[i][0] + (ps[i+1][0]-ps[i-1][0])*a;
+      pAy = ps[i][1] + (ps[i+1][1]-ps[i-1][1])*a;
+    }
+    if (i > ps.length - 3) {
+      last = ps.length - 1;
+      pBx = ps[last][0] - (ps[last][0]-ps[last-1][0])*b;
+      pBy = ps[last][1] - (ps[last][1]-ps[last-1][1])*b;
+    } else {
+      pBx = ps[i+1][0] - (ps[i+2][0]-ps[i][0])*b;
+      pBy = ps[i+1][1] - (ps[i+2][1]-ps[i][1])*b;
+    }
+    return {
+      a:{x:pAx,y:pAy},
+      b:{x:pBx,y:pBy}
+    }
+  }
+
   EC.Util = EC.Util || {};
 
   EC.extend(EC.Util, {
     color: colorTransfer,
     getParameter: getParameter,
-    hitTest: hitTest
+    hitTest: hitTest,
+    getCtrlPoint: getCtrlPoint
   });
 
 })(window.EC);
@@ -733,7 +764,7 @@ var cancelAnimationFrame =
 
   var ajaxSettings = {
     url: "",
-    type: 'GET',
+    method: 'GET',
     async: true,
     data: {},
     headers: {},
@@ -741,6 +772,7 @@ var cancelAnimationFrame =
     cache: true,
     cors: false,
     global: true,
+    processData: true,
     crossDomain: false,
     beforeSend: EC.noop,
     success: EC.noop,
@@ -749,7 +781,7 @@ var cancelAnimationFrame =
     progress: null,
     timeout: 0,
     context: null,
-    dataType: "text",
+    dataType: "json",
     responseType: null,
     callbackName: "?",
     contentType: 'application/x-www-form-urlencoded;charset=UTF-8',
@@ -781,20 +813,25 @@ var cancelAnimationFrame =
     EC.extend(ajaxSettings, settings || {});
   }
 
-  function getUrlModule(params, cache) {
+  function getUrlModule(params, cache, processData) {
     var data = null;
     if (!cache) {
       var rnd = Date.now() + Math.random() * 1e18;
     }
     if (typeof params === 'object') {
-      data = [];
-      if (!cache) {
-        params._ = rnd;
+      if (!processData) {
+        data = JSON.stringify(params);
       }
-      for (var i in params) {
-        data.push(i + "=" + params[i]);
+      else {
+        data = [];
+        if (!cache) {
+          params._ = rnd;
+        }
+        for (var i in params) {
+          data.push(i + "=" + params[i]);
+        }
+        data = data.join("&");
       }
-      data = data.join("&");
     }
     else if (typeof params === 'string') {
       data = params;
@@ -821,9 +858,9 @@ var cancelAnimationFrame =
     if (!xhr) return;
 
     var dataType = args.dataType.toLowerCase(),
-      type = args.type.toUpperCase(),
+      method = args.method.toUpperCase(),
       url = args.url,
-      data = getUrlModule(args.data, args.cache),
+      data = getUrlModule(args.data, args.cache, args.processData),
       timeout;
 
     if (!args.crossDomain) {
@@ -876,7 +913,7 @@ var cancelAnimationFrame =
       }, args.timeout);
     }
 
-    if (type === 'GET' && data) {
+    if (method === 'GET' && data) {
       url += url.indexOf("?") > -1 ? ("&" + data) : ("?" + data);
       data = null;
     }
@@ -931,7 +968,7 @@ var cancelAnimationFrame =
       }
     }
 
-    xhr.open(type, url, args.async);
+    xhr.open(method, url, args.async);
 
     if (args.cors) {
       args.xhrFields.withCredentials = true;
@@ -941,9 +978,9 @@ var cancelAnimationFrame =
       xhr[name] = args.xhrFields[name];
     }
 
-    if (!args.crossDomain || !args.cors) {
+    /*if (!args.crossDomain && !args.cors) {
       args.headers["X-Requested-With"] = "XMLHttpRequest";
-    }
+    }*/
 
     args.headers['Content-Type'] = args.contentType;
 
@@ -1237,10 +1274,9 @@ var cancelAnimationFrame =
     baseUrl: 'images/'
   });
 
-  ['get', 'post', 'getJSON'].forEach(function (type, index) {
-    RES.request[type] = function (url, params) {
-      type = type.replace(/(JSON)?$/, "");
-      return new Request({url: url, type: type, data: params, dataType: index === 2 ? 'json' : 'text'});
+  ['get', 'post'].forEach(function (method) {
+    RES.request[method] = function (url, params, cfg) {
+      return new Request(EC.extend({url: url, method: method, data: params}, cfg || {}));
     };
   });
 
@@ -3007,13 +3043,26 @@ var cancelAnimationFrame =
   }
 
   function getQuadraticLineSize(coords, moveX, moveY) {
-    var widths = [moveX], heights = [moveY];
+    var widths = [moveX||0], heights = [moveY||0];
     coords.forEach(function (coord, i) {
       if (i % 2 === 0) {
         widths.push(coord);
       } else {
         heights.push(coord);
       }
+    });
+
+    return {
+      width: getMax(widths) - getMin(widths),
+      height: getMax(heights) - getMin(heights)
+    }
+  }
+
+  function getBezierCurveLineSize(coords) {
+    var widths = [], heights = [];
+    coords.forEach(function (coord) {
+      widths.push(coord[0]);
+      heights.push(coord[1]);
     });
 
     return {
@@ -3117,6 +3166,10 @@ var cancelAnimationFrame =
 
     ellipse: function (ctx, obj) {
       ctx.ellipse(obj.width / 2 + obj.moveX, obj.height / 2 + obj.moveY, obj.width, obj.height);
+    },
+
+    curve: function (ctx, obj) {
+      ctx.curve(obj.coords);
     },
 
     clip: function (ctx) {
@@ -3227,6 +3280,10 @@ var cancelAnimationFrame =
 
     getBounds: function () {
       return new Bounds(this);
+    },
+
+    collideWith: function (displayObject) {
+      return EC.Util.hitTest(this, displayObject);
     },
 
     setParams: function (params) {
@@ -3444,7 +3501,7 @@ var cancelAnimationFrame =
       this.lineSpacing = 2;
       this.stroke = false;
       this.strokeOnly = false;
-      this.multiple = false;
+      this.multiline = false;
 
       this.x = x || 0;
       this.y = y || 0;
@@ -3461,12 +3518,12 @@ var cancelAnimationFrame =
           return this.$text;
         },
         set: function (newVal) {
-          this.$text = newVal;
-          if (this.multiple) {
-            this.$textArr = calcTextArr(this, newVal).split(/\n/);
+          this.$text = String(newVal);
+          if (this.multiline) {
+            this.$textArr = calcTextArr(this, this.$text).split(/\n/);
           }
           else {
-            this.$textArr = newVal.split(/\n/);
+            this.$textArr = this.$text.split(/\n/);
             if (!this.$hasW) {
               this.$width = getTextWidth(this, getMaxLenText(this.$textArr));
             }
@@ -3733,6 +3790,14 @@ var cancelAnimationFrame =
       this.drawType = 'ellipse';
       return this;
     },
+    drawCurve: function (coords) {
+      this.coords = coords || [];
+      var lineSize = getBezierCurveLineSize(this.coords);
+      this.width = lineSize.width;
+      this.height = lineSize.height;
+      this.drawType = 'curve';
+      return this;
+    },
     clip: function () {
       this.drawType = 'clip';
       return this;
@@ -3797,6 +3862,17 @@ var cancelAnimationFrame =
       this.bezierCurveTo(x - k, y + h, x - k, y - h, x, y - h);
       this.closePath();
       return this;
+    },
+    curve: function (points) {
+      var i = 0, len = points.length, ctrlP;
+      for (; i < len; i++) {
+        if (i === 0 ) {
+          this.moveTo(points[0][0], points[0][1]);
+        } else {
+          ctrlP = EC.Util.getCtrlPoint(points, i - 1);
+          this.bezierCurveTo(ctrlP.a.x, ctrlP.a.y, ctrlP.b.x, ctrlP.b.y, points[i][0], points[i][1]);
+        }
+      }
     }
   });
 
@@ -3993,7 +4069,7 @@ var cancelAnimationFrame =
       }
 
       this.textField.width = this.width - this.padding[1] - this.padding[3];
-      this.textField.multiple = true;
+      this.textField.multiline = true;
       this.textField.lineSpacing = this.inputType !== "textarea" ? this.height : this.lineSpacing;
       this.textField.size = this.fontSize;
       this.textField.fontFamily = this.fontFamily || this.textField.fontFamily;
@@ -4880,6 +4956,7 @@ var cancelAnimationFrame =
       Object.defineProperty(this, 'layout', {
         set: function(target) {
           self.$layout = target;
+          self.touchScroll = self._createScroll();
           self.addChild(target);
         },
         get: function() {

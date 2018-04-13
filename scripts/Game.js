@@ -3,9 +3,6 @@ var Game = (function(){
   var Game = EC.Sprite.extend({
     initialize: function (x, y) {
       Game.superclass.initialize.apply(this, arguments);
-      this.x = x || 0;
-      this.y = y || 0;
-
       this.debug = false;
       this.leftPaw = null;
       this.rightPaw = null;
@@ -13,12 +10,12 @@ var Game = (function(){
       this.mouseConstraint = null;
       this.target = null;
       this.isCollision = false;
-
+      this.award = [];
       this._boxStack = [];
 
-      this.on("addToStage", this._onAddToStage, this);
+      this.on("addToStage", this.onAddToStage, this);
     },
-    _onAddToStage: function () {
+    onAddToStage: function () {
       this.createWorldSystem();
       this.addElements();
       this.initEvents();
@@ -41,33 +38,40 @@ var Game = (function(){
       this.createGround(20, 950, -20, -200, '左墙面');
       this.createGround(20, 950, 648, -200, '右墙面');
 
-      this.reStart();
       this.hooker = new Hooker();
       this.addChild(this.hooker);
+
+      this.reStart();
 
     },
     reStart: function () {
       this.isCollision = false;
       this.target = null;
+      this.award = [];
+
+      this.removeConstraint();
 
       var self = this;
       var breadArgs = [
-        {resId: "bread01_png", bundleId: 1},{resId: "bread02_png", bundleId: 2},
-        {resId: "bread03_png", bundleId: 3},{resId: "bread04_png", bundleId: 4},
-        {resId: "bread05_png", bundleId: 5},{resId: "bread06_png", bundleId: 6},
-        {resId: "bread07_png", bundleId: 7},{resId: "bread08_png", bundleId: 8},
-        {resId: "bread09_png", bundleId: 9},{resId: "bread10_png", bundleId: 10}
+        { resId: "bread01_png", bundleId: 'bread01' }, { resId: "bread02_png", bundleId: 'bread02' },
+        { resId: "bread03_png", bundleId: 'bread03' }, { resId: "bread04_png", bundleId: 'bread04' },
+        { resId: "bread05_png", bundleId: 'bread05' }, { resId: "bread06_png", bundleId: 'bread06' },
+        { resId: "bread07_png", bundleId: 'bread07' }, { resId: "bread08_png", bundleId: 'bread08' },
+        { resId: "bread09_png", bundleId: 'bread09' }, { resId: "bread10_png", bundleId: 'bread10' }
       ];
 
       this.clearBodies();
 
       breadArgs.forEach(function (arg, i) {
         setTimeout(function(){
-          self._boxStack.push(self.createBread(arg, Utils.range(100, 400)));
-        }, i*100);
+          self._boxStack.push(self.createBread(arg, Utils.range(100, 500)));
+        }, i * 100);
       });
 
-      this.broadcast('reStartGame');
+      //待所有面包都掉落了再移动抓子
+      setTimeout(() => {
+        this.hooker.dispatch('reStartGame');
+      }, 2000);
     },
     createConstraintBody: function () {
       var vec1 = [[24, 0],[35, 8],[15, 44],[19, 73],[47, 100],[38, 110],[4, 77],[0, 42]];
@@ -143,11 +147,15 @@ var Game = (function(){
 
       return concaveBody;
     },
-    createBread: function(arg, posX, mass){
+    createBread: function(arg, startX, mass){
+      if (startX === undefined) { startX = 0; }
+      if (mass === undefined) { mass = 2; }
+
       //添加长方形刚体的显示对象
-      var display = Utils.createBitmap(arg.resId);
-      display.width = display.width*0.6;
-      display.height = display.height*0.6;
+      var display = new Bread(arg.resId);
+
+      //面包开始掉落的初始位置
+      var startY = -display.height;
       display.anchorX = 0.5;
       display.anchorY = 0.5;
 
@@ -167,14 +175,14 @@ var Game = (function(){
 
       var boxBody = new p2.Body(
         {
-          mass: mass || 2,
-          position: Utils.getP2Pos((posX || 0) + display.width / 2, -display.height),
+          mass: mass,
+          position: Utils.getP2Pos(startX + display.width / 2, startY),
           angularVelocity: 1,
           type: p2.Body.DYNAMIC
         }
       );
 
-      boxBody.displayName = display.name;
+      boxBody.displayName = arg.resId;
       boxBody.bundleId = arg.bundleId;
       boxBody.addShape(boxShape);
       this.world.addBody(boxBody);
@@ -261,12 +269,46 @@ var Game = (function(){
       this.world.removeConstraint(this.mouseConstraint);
       this.mouseConstraint = null;
     },
+    release: function() {
+      this.removeConstraint();
+      this.removePaws();
+      if (this.target) {
+        this.target.displays[0].cry();
+      }
+    },
     showResult: function (target) {
-      if(target) {
+      if (target) {
+        target.displays[0].stopSmile();
         console.log(target.displayName, target.bundleId);
       } else {
         console.log('未抓到任何面包');
       }
+      if (this.award.length > 0) {
+        this.parent.showAward(this.award);
+      } else {
+        this.parent.showFail();
+      }
+    },
+    getGameResult: function(target) {
+      service.game.result(target ? target.bundleId : "").then(function (res) {
+        this.award = res.income || [];
+        this.hooker.goUp();
+        //如果有抓中
+        if (target) {
+          //给抓中的面包一个笑脸
+          target.displays[0].smile();
+          //如果没有中奖，则给个概率是在底部释放还是抓子升起一半时释放
+          if (this.award.length === 0) {
+            if (Math.random() > .2) {
+              setTimeout(() => {
+                this.release();
+              }, 2500);
+            } else {
+              this.release();
+            }
+          }
+        }
+      }.bind(this));
     },
     initEvents: function () {
       var crBody = null;
@@ -277,7 +319,10 @@ var Game = (function(){
       }, this);
 
       this.on("startGame", function(e){
-        this.hooker.goDown();
+        if (this.hooker.isEnabled()) {
+          this.hooker.goDown();
+          this.hooker.dispatch('startGame');
+        }
       }, this);
 
       this.world.on('impact', function(e){
@@ -288,6 +333,7 @@ var Game = (function(){
             this.target = e.bodyA === crBody ? e.bodyB : e.bodyA;
             this.hooker.stop();
             this.createConstraint(this.target);
+            this.dispatch('catch');
             console.log('hit -> ' + this.target.displayName);
           }
         }
@@ -300,9 +346,18 @@ var Game = (function(){
          }
       }, this);
 
-      this.hooker.on('godown', function(){
-        //钩子一目下降时创建爪子刚体
+      this.on('catch', function () {
+        this.getGameResult(this.target);
+      }, this);
+
+      this.hooker.on('godown', function () {
+        //钩子下降时创建爪子刚体
         this.createConstraintBody();
+      }, this);
+
+      //钩子下降到最底部
+      this.hooker.on('reachdown', function () {
+        this.getGameResult(null);
       }, this);
 
       this.hooker.on('goup', function(){
@@ -314,16 +369,8 @@ var Game = (function(){
 
       this.hooker.on('reachup', function(){
         this.removePaws();
-        this.removeConstraint();
         this.showResult(this.target);
-        console.log('reachup');
-      }, this);
-
-      this.stage.touchEnabled = true;
-      this.stage.on("touchend", function(e){
-        if(e.stageY < 200) {
-          this.reStart();
-        }
+        this.dispatch('reachup');
       }, this);
     }
   });

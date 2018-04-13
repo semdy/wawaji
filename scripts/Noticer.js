@@ -4,16 +4,36 @@ var Noticer = (function(){
     initialize: function (x, y) {
       Noticer.superclass.initialize.apply(this, arguments);
 
-      this.x = x || 0;
-      this.y = y || 0;
+      this.on("addToStage", this.onAddToStage, this);
+    },
+    onAddToStage() {
       this.noticeText = new EC.TextField();
-      this.noticeText.text = "恭喜xxx获得xxxx一个！";
-      this.noticeText.size = 35;
+      this.noticeText.text = '';
+      this.noticeText.size = 32;
       this.noticeText.width = 580;
       this.noticeText.textAlign = 'center';
-      this.noticeText.textColor = '#fff';
-
+      this.noticeText.textColor = "#fff";
       this.addChild(this.noticeText);
+    },
+    startChange(result) {
+      var textfield = this.noticeText;
+      var count = -1;
+      var change = () => {
+        count++;
+        if (count >= result.length) {
+          count = 0;
+        }
+        var textFlow = result[count];
+
+        textfield.text = textFlow;
+        var tw = EC.Tween.get(textfield);
+        tw.to({ alpha: 1 }, 200);
+        tw.wait(2000);
+        tw.to({ alpha: 0 }, 200);
+        tw.call(change, this);
+      };
+
+      change();
     }
   });
 

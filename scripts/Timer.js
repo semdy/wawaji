@@ -9,17 +9,14 @@ var Timer = (function(){
 
       this.count = 0;
       this._countText = new EC.TextField();
-      this._countText.textColor = '#fff';
-      this._countText.text = '免费：' + this.count + '次';
+      this._countText.textColor = "#ffffff";
+      this._countText.text = '剩余:' + this.count + '次';
       this._countText.size = 26;
       this.addChild(this._countText);
-
-      this._timer = new EC.TextField();
-      this._timer.textColor = '#fff';
-      this._timer.text = '00: 00: 00';
-      this._timer.y = 35;
-      this._timer.size = 28;
-      this.addChild(this._timer);
+    },
+    setCount(count) {
+      this.count = count;
+      this._countText.text = '剩余:' + this.count + '次';
     }
   });
 
