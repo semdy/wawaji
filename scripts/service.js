@@ -4,7 +4,7 @@ var service;
     function common() {
     }
     common.doRequest = function (url, data, sucFun, errFun) {
-      RES.request.post("" + URLObj.siloHost + url + ".json", Object.assign({ auth: user.getAuthToken() }, data), { processData: false }).then(function (res) {
+      RES.request.post(URLObj.siloHost + url + ".json", Object.assign({ auth: user.getAuthToken() }, data), { processData: false }).then(function (res) {
         if (res.protocError === 0) {
           sucFun(res);
         }
@@ -21,7 +21,7 @@ var service;
           }
         }
       }).catch(function (e) {
-        var errMsg = '缃戠粶璇锋眰閿欒';
+        var errMsg = '网络请求错误';
         errFun(errMsg);
         Utils.toast(errMsg);
       });
