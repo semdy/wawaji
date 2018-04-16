@@ -6,7 +6,7 @@ var Noticer = (function(){
 
       this.on("addToStage", this.onAddToStage, this);
     },
-    onAddToStage() {
+    onAddToStage: function() {
       this.noticeText = new EC.TextField();
       this.noticeText.text = '';
       this.noticeText.size = 32;
@@ -15,10 +15,10 @@ var Noticer = (function(){
       this.noticeText.textColor = "#fff";
       this.addChild(this.noticeText);
     },
-    startChange(result) {
+    startChange: function(result) {
       var textfield = this.noticeText;
       var count = -1;
-      var change = () => {
+      var change = function () {
         count++;
         if (count >= result.length) {
           count = 0;

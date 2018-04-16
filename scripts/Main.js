@@ -17,12 +17,13 @@
       }.bind(this));
 
       auth.launch();
-      auth.ready(() => {
+      auth.ready(function() {
         this.AuthReady();
-      });
-      auth.error(() => {
+      }.bind(this));
+
+      auth.error(function() {
         Utils.showQrcode();
-      });
+      }.bind(this));
     },
 
     AuthReady: function () {
@@ -51,7 +52,7 @@
       });
     },
 
-    runGame() {
+    runGame: function() {
       this.removeChild(this.loadingView);
       this.createGameScene();
       service.game.log().then(function (gameLogs) {

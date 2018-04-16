@@ -14,7 +14,7 @@ var Timer = (function(){
       this._countText.size = 26;
       this.addChild(this._countText);
     },
-    setCount(count) {
+    setCount: function(count) {
       this.count = count;
       this._countText.text = '剩余:' + this.count + '次';
     }

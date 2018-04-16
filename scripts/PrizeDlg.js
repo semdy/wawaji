@@ -6,7 +6,7 @@ var PrizeDlg = (function(){
 
       this.on("addToStage", this.onAddToStage, this);
     },
-    onAddToStage() {
+    onAddToStage: function() {
       var alphaMask = new EC.Shape();
       alphaMask.fill("#000000", .8);
       alphaMask.drawRect(0, 0, this.stage.width, this.stage.height);
@@ -39,11 +39,11 @@ var PrizeDlg = (function(){
 
       this.addChild(awardSpr);
     },
-    setData(data) {
+    setData: function(data) {
       this.dataList = data;
       this.setScrollViewContent();
     },
-    setScrollViewContent() {
+    setScrollViewContent: function() {
       var spr = new EC.Sprite();
       this.dataList.forEach(function(item, i) {
         var prizeItem = new PrizeItem(item);

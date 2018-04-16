@@ -7,7 +7,7 @@ var AwardDlg = (function(){
       this.dataList = awardData || [];
       this.on("addToStage", this.onAddToStage, this);
     },
-    onAddToStage() {
+    onAddToStage: function() {
       var alphaMask = new EC.Shape();
       alphaMask.fill("#000000", .8);
       alphaMask.drawRect(0, 0, this.stage.width, this.stage.height);
@@ -53,27 +53,27 @@ var AwardDlg = (function(){
 
       this.awardSpr = awardSpr;
     },
-    setData(awardData) {
+    setData: function(awardData) {
       this.dataList = awardData;
       this.setScrollViewContent();
     },
-    show() {
+    show: function() {
       this.visible = true;
       EC.Tween.get(this.awardSpr).to({scaleX: 1, scaleY: 1}, 500, EC.Easing.Back.Out);
     },
-    hide() {
+    hide: function() {
       this.awardSpr.scaleX = 0.5;
       this.awardSpr.scaleY = 0.5;
       this.visible = false;
     },
-    setScrollViewContent() {
+    setScrollViewContent: function() {
       this.scrollView.clearContent();
       this.scrollView.y = this.dataList.length === 1 ? 425 : 375;
       this.hint.y = this.dataList.length === 1 ? 622 : 657;
 
-      let spr = new EC.Sprite();
+      var spr = new EC.Sprite();
       this.dataList.forEach(function(item, i){
-        let awardItem = new AwardItem(item);
+        var awardItem = new AwardItem(item);
         awardItem.y = (175 + 6) * i;
         spr.addChild(awardItem);
       });

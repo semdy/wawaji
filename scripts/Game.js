@@ -69,9 +69,9 @@ var Game = (function(){
       });
 
       //待所有面包都掉落了再移动抓子
-      setTimeout(() => {
+      setTimeout(function() {
         this.hooker.dispatch('reStartGame');
-      }, 2000);
+      }.bind(this), 2000);
     },
     createConstraintBody: function () {
       var vec1 = [[24, 0],[35, 8],[15, 44],[19, 73],[47, 100],[38, 110],[4, 77],[0, 42]];
@@ -300,9 +300,9 @@ var Game = (function(){
           //如果没有中奖，则给个概率是在底部释放还是抓子升起一半时释放
           if (this.award.length === 0) {
             if (Math.random() > .2) {
-              setTimeout(() => {
+              setTimeout(function() {
                 this.release();
-              }, 2500);
+              }.bind(this), 2500);
             } else {
               this.release();
             }

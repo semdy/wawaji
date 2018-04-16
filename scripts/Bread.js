@@ -8,7 +8,7 @@ var Bread = (function () {
       this.faceEven = false;
 
       //添加长方形刚体的显示对象
-      let display = Utils.createBitmapByName(this.name);
+      var display = Utils.createBitmapByName(this.name);
       display.width *= 0.6;
       display.height *= 0.6;
 

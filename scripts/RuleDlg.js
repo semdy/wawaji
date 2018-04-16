@@ -6,7 +6,7 @@ var RuleDlg = (function(){
 
       this.on("addToStage", this.onAddToStage, this);
     },
-    onAddToStage() {
+    onAddToStage: function() {
       var alphaMask = new EC.Shape();
       alphaMask.fill("#000000", .8);
       alphaMask.drawRect(0, 0, this.stage.width, this.stage.height);
