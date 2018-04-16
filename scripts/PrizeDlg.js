@@ -50,7 +50,7 @@ var PrizeDlg = (function(){
         prizeItem.y = 110 * i;
         spr.addChild(prizeItem);
       });
-      this.scrollView.layout = spr;
+      this.scrollView.setContent(spr);
     }
   });
 

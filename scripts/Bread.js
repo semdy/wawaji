@@ -27,9 +27,9 @@ var Bread = (function () {
       this.timer = new EC.Timer(500);
       this.timer.on("timer", function () {
         if (this.faceEven) {
-          this.face.texture = RES.getRes("smile2_png").texture;
+          this.face.$texture = RES.getRes("smile2_png").texture;
         } else {
-          this.face.texture = RES.getRes("smile1_png").texture;
+          this.face.$texture = RES.getRes("smile1_png").texture;
         }
         this.faceEven = !this.faceEven;
       }, this);
@@ -39,14 +39,14 @@ var Bread = (function () {
       return "face0" + faceNum + "_png";
     },
     smile: function () {
-      this.face.texture = RES.getRes("smile1_png").texture;
+      this.face.$texture = RES.getRes("smile1_png").texture;
       this.face.rotation = -this.rotation;
       this.timer.start();
     },
     cry: function () {
       this.stopSmile();
       this.face.rotation = this.rotation;
-      this.face.texture = RES.getRes(this.faceName).texture;
+      this.face.$texture = RES.getRes(this.faceName).texture;
     },
     stopSmile: function () {
       this.timer.stop();

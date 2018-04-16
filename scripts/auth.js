@@ -112,7 +112,6 @@ var auth = (function () {
         param: _openid,
         __zaofans: true
       }).then(function (ret) {
-        console.log(ret)
         var isFollowed = (ret.data || {}).subscribe === 1 ? true : false;
         if (isFollowed) {
           storage.local.set("_isFollowed", isFollowed);

@@ -2,7 +2,7 @@ var LoadingUI = (function(){
 
   var LoadingUI = EC.Sprite.extend({
     initialize: function (x, y) {
-      LoadingUI.superclass.initialize.apply(this, arguments);
+      LoadingUI.superclass.initialize.call(this);
       this.on("addToStage", this.createView, this);
     },
     createView: function () {
@@ -21,7 +21,8 @@ var LoadingUI = (function(){
       this.bar = new EC.Sprite();
       this.bar.addChild(Utils.createBitmapByName('loading_bar_png', 9, 7));
       this.barMask = new EC.Masker();
-      this.barMask.drawRect(-this.bar.width, 0, this.bar.width, this.bar.height);
+      this.barMask.drawRect(0, 0, this.bar.width, this.bar.height);
+      this.barMask.x = -this.bar.width;
       this.bar.mask = this.barMask;
       loadingSpr.addChild(this.bar);
 
@@ -36,6 +37,7 @@ var LoadingUI = (function(){
       this.textField.size = 21;
       this.textField.x = 290;
       this.textField.y = 14;
+      this.textField.textWeight = 'bold';
       this.textField.textAlign = "center";
       this.addChild(loadingSpr);
     },

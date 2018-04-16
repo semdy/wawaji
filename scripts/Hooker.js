@@ -39,10 +39,8 @@ var Hooker = (function(){
       this.dispatch('close');
       this.closeLegs(function(){
         this.dispatch('goup');
-        EC.Tween.get(this.paws).to({y: 0}, 3000).call(function(){
-          setTimeout(function(){
-            this.dispatch('reachup');
-          }.bind(this), 300);
+        EC.Tween.get(this.paws).to({y: 0}, 3000).wait(300).call(function(){
+          this.dispatch('reachup');
         }, this);
       });
 

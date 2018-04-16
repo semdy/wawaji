@@ -67,7 +67,7 @@ var AwardDlg = (function(){
       this.visible = false;
     },
     setScrollViewContent() {
-      this.scrollView.removeAllChildren();
+      this.scrollView.clearContent();
       this.scrollView.y = this.dataList.length === 1 ? 425 : 375;
       this.hint.y = this.dataList.length === 1 ? 622 : 657;
 
@@ -77,7 +77,7 @@ var AwardDlg = (function(){
         awardItem.y = (175 + 6) * i;
         spr.addChild(awardItem);
       });
-      this.scrollView.layout = spr;
+      this.scrollView.setContent(spr);
     }
   });
 

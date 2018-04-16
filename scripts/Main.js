@@ -1,4 +1,4 @@
-;(function (window, EC, undefined) {
+;(function (window, EC) {
 
   var MainScene = EC.Sprite.extend({
     initialize: function () {
@@ -9,12 +9,12 @@
     onAddToStage: function () {
       this._openid = Utils.getQueryString('openid');
       this.wxShare();
-      this.loadResource().then(() => {
+      this.loadResource().then(function() {
         this._sourceReady = true;
         if (this._authReady) {
           this.runGame();
         }
-      });
+      }.bind(this));
 
       auth.launch();
       auth.ready(() => {
@@ -72,17 +72,17 @@
           loadingLoader.on("complete", function () {
             self.loadingView = new LoadingUI();
             self.addChild(self.loadingView);
-          });
 
-          var loader = RES.loadGroup("preload", resData);
-          loader.on("progress", function (loaded, total) {
-            self.loadingView.setProgress(loaded, total);
-          });
+            var loader = RES.loadGroup("preload", resData);
+            loader.on("progress", function (loaded, total) {
+              self.loadingView.setProgress(loaded, total);
+            });
 
-          loader.on("complete", function () {
-            resolve();
-          });
+            loader.on("complete", function () {
+              resolve();
+            });
 
+          });
         });
       });
     },
@@ -277,7 +277,7 @@
           } else {
             Utils.toast("您当前积分不足，请去商城购物或者通过其它方式获取更多积分");
           }
-        });
+        }.bind(this));
       }, this);
 
       document.addEventListener(EC.EVENTS.START, function (e) {
@@ -289,7 +289,7 @@
   function Main() {
     var canvas = document.getElementById('app');
     var stage = new EC.Stage(canvas, {
-      scaleMode: 'showAll',
+      scaleMode: 'noBorder',
       width: 750,
       height: 1334,
       showFps: true
@@ -302,8 +302,12 @@
     });
 
     stage.addChild(new MainScene());
+
+    return {
+      stage: stage
+    }
   }
 
-  Main();
+  window.Main = Main();
 
 })(window, window.EC);

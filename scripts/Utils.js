@@ -3,8 +3,7 @@ var Utils = (function () {
   Utils.factor = 50;
   Utils.createBitmapByName = function (name, x, y, w, h) {
     var result = new EC.BitMap();
-    var texture = RES.getRes(name);
-    result.setTexture(texture);
+    result.texture = RES.getRes(name);
     result.x = x || 0;
     result.y = y || 0;
     if (w !== undefined) {

@@ -59,7 +59,7 @@ var RuleDlg = (function(){
       this.scrollView.x = 55;
       this.scrollView.width = rules.width;
       this.scrollView.height = 320;
-      this.scrollView.layout = rules;
+      this.scrollView.setContent(rules);
       awardSpr.addChild(this.scrollView);
 
       this.addChild(awardSpr);
