@@ -29,7 +29,7 @@
     AuthReady: function () {
       service.asset.drop();
       service.asset.remain().then(function (res) {
-        this.remainAmount = this._getGameAmount(res.remain);
+        this.remainAmount = 1000//this._getGameAmount(res.remain);
         this._authReady = true;
         if (this._sourceReady) {
           this.runGame();
