@@ -195,9 +195,8 @@
       this.timer.setCount(this.remainAmount);
       this.addChild(this.timer);
 
+      var mask = new EC.Rectangle(-50, 0, this.stage.width, 765);
       this.game = new Game(50, 368);
-      var mask = new EC.Masker();
-      mask.drawRect(-50, 0, this.stage.width, 765);
       this.game.mask = mask;
       this.addChild(this.game);
 

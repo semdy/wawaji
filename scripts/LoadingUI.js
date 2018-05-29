@@ -20,8 +20,7 @@ var LoadingUI = (function(){
 
       this.bar = new EC.Sprite();
       this.bar.addChild(Utils.createBitmapByName('loading_bar_png', 9, 7));
-      this.barMask = new EC.Masker();
-      this.barMask.drawRect(0, 0, this.bar.width, this.bar.height);
+      this.barMask = new EC.Rectangle(0, 0, this.bar.width, this.bar.height);
       this.barMask.x = -this.bar.width;
       this.bar.mask = this.barMask;
       loadingSpr.addChild(this.bar);
