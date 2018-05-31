@@ -15,6 +15,7 @@ var RuleDlg = (function(){
       this.addChild(alphaMask);
 
       var awardSpr = new EC.Sprite();
+      awardSpr.cacheAsBitmap = true;
       awardSpr.x = 70;
       awardSpr.y = 406;
 

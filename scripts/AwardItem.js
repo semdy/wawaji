@@ -3,6 +3,7 @@ var AwardItem = (function(){
   var AwardItem = EC.Sprite.extend({
     initialize: function (data) {
       AwardItem.superclass.initialize.call(this);
+      this.cacheAsBitmap = true;
       this.data = data;
 
       var awardItemBg = Utils.createBitmapByName('award_item_bg_png');

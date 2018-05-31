@@ -3,6 +3,7 @@ var PrizeItem = (function(){
   var PrizeItem = EC.Sprite.extend({
     initialize: function (data) {
       PrizeItem.superclass.initialize.call(this);
+      this.cacheAsBitmap = true;
       this.data = data;
 
       var awardItemBg = Utils.createBitmapByName(this.data.key + '_png');

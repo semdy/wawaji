@@ -15,6 +15,7 @@ var AwardDlg = (function(){
       this.addChild(alphaMask);
 
       var awardSpr = new EC.Sprite();
+      awardSpr.cacheAsBitmap = true;
       var awardBg = Utils.createBitmapByName('award_bg_png');
       awardSpr.addChild(awardBg);
 
