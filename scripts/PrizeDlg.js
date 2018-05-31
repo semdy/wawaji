@@ -3,6 +3,7 @@ var PrizeDlg = (function(){
   var PrizeDlg = EC.Sprite.extend({
     initialize: function (x, y) {
       PrizeDlg.superclass.initialize.apply(this, arguments);
+      this.cacheAsBitmap = true;
 
       this.on("addToStage", this.onAddToStage, this);
     },

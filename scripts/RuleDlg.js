@@ -3,6 +3,7 @@ var RuleDlg = (function(){
   var RuleDlg = EC.Sprite.extend({
     initialize: function (x, y) {
       RuleDlg.superclass.initialize.apply(this, arguments);
+      this.cacheAsBitmap = true;
 
       this.on("addToStage", this.onAddToStage, this);
     },

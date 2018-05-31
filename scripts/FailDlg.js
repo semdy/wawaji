@@ -3,6 +3,7 @@ var FailDlg = (function(){
   var FailDlg = EC.Sprite.extend({
     initialize: function (awardData) {
       FailDlg.superclass.initialize.apply(this, arguments);
+      this.cacheAsBitmap = true;
       this.awardData = awardData || [];
       this.on("addToStage", this.onAddToStage, this);
     },

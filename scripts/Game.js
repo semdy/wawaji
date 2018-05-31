@@ -3,6 +3,7 @@ var Game = (function(){
   var Game = EC.Sprite.extend({
     initialize: function (x, y) {
       Game.superclass.initialize.apply(this, arguments);
+
       this.debug = false;
       this.leftPaw = null;
       this.rightPaw = null;

@@ -3,6 +3,7 @@ var PointDlg = (function(){
   var PointDlg = EC.Sprite.extend({
     initialize: function (x, y) {
       PointDlg.superclass.initialize.apply(this, arguments);
+      this.cacheAsBitmap = true;
 
       this.on("addToStage", this.onAddToStage, this);
     },

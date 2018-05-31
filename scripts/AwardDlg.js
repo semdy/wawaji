@@ -3,6 +3,7 @@ var AwardDlg = (function(){
   var AwardDlg = EC.Sprite.extend({
     initialize: function (awardData) {
       AwardDlg.superclass.initialize.apply(this, arguments);
+      this.cacheAsBitmap = true;
 
       this.dataList = awardData || [];
       this.on("addToStage", this.onAddToStage, this);

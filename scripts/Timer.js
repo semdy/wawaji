@@ -3,6 +3,7 @@ var Timer = (function(){
   var Timer = EC.Sprite.extend({
     initialize: function (x, y) {
       Timer.superclass.initialize.apply(this, arguments);
+      this.cacheAsBitmap = true;
 
       this.x = x || 0;
       this.y = y || 0;
